@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd51f2a1c139b9479f68cf879082a39, type: 3}
+  m_Name: DataBase
+  m_EditorClassIdentifier: 
+  humans:
+  - <Name>k__BackingField: Soldier
+    <ID>k__BackingField: 0
+    <Size>k__BackingField: {x: 1, y: 1}
+    <Prefab>k__BackingField: {fileID: 6291114124733474884, guid: 1b9f52f598306994183070a35a2d993d, type: 3}
+  - <Name>k__BackingField: Archer
+    <ID>k__BackingField: 1
+    <Size>k__BackingField: {x: 1, y: 1}
+    <Prefab>k__BackingField: {fileID: 3060961699952971068, guid: aca26cece9ba3194c9d37623779ddf22, type: 3}
+  - <Name>k__BackingField: Knigth
+    <ID>k__BackingField: 2
+    <Size>k__BackingField: {x: 1, y: 1}
+    <Prefab>k__BackingField: {fileID: 4715785095878224283, guid: 7a000bac1320dcc4790cdd4d0aa7499d, type: 3}
+  - <Name>k__BackingField: Mag
+    <ID>k__BackingField: 3
+    <Size>k__BackingField: {x: 1, y: 1}
+    <Prefab>k__BackingField: {fileID: 8548710057674257952, guid: 272c83cba4cc7b64d8f1332ec014129b, type: 3}
+  - <Name>k__BackingField: 
+    <ID>k__BackingField: 0
+    <Size>k__BackingField: {x: 0, y: 0}
+    <Prefab>k__BackingField: {fileID: 0}
+  orcs: []
+  undeads: []
