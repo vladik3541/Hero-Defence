@@ -121,13 +121,13 @@ public class PlacementSystem : MonoBehaviour
 
         bool placementValidity = CheckPlacementValidity(gridPosition, _selectObject);
 
-        if (placementValidity == false)
+        if (placementValidity == false || !MoneyManager.instance.IsEnoughMoney(_currentRace[_selectObject].Price))
         {
             _audioSource.clip = dontAllowPlacement;
             _audioSource.Play();
             return;
         }
-
+        MoneyManager.instance.RemoveMoney((_currentRace[_selectObject].Price));
         // Тільки якщо все ОК - розміщуємо і грає успішний звук
         _audioSource.clip = allowPlacement;
         _audioSource.Play();
