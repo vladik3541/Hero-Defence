@@ -15,7 +15,6 @@ public class UnitControl : MonoBehaviour
 
     private List<GameObject> _targets;
 
-
     bool _isAttacking;
     bool _attackingTarget;
 
@@ -37,26 +36,24 @@ public class UnitControl : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         MovingAttack();
         StopActions(); 
 
         if (!_targets.Any()) return;
-        if (_targets[0] == null)//���� 1 ������� null �������� �� ������
+        if (_targets[0] == null)
         {
             _targets.Remove(_targets[0]);
             return;
         }
         LookToTarget();
         MoveToTaget();
-        
     }
 
-    private void MovingAttack() // ��� � ������� ������ 
+    private void MovingAttack()
     {
-        if (Input.GetKey(KeyCode.F) && !_targets.Any() && !_attackingTarget) // ������ ��� �� ������ ������ 
+        if (Input.GetKey(KeyCode.F) && !_targets.Any() && !_attackingTarget)
         {
             _isAttacking = true;
         }
@@ -64,7 +61,6 @@ public class UnitControl : MonoBehaviour
         if(_isAttacking)
         {
             animator.SetBool("Run", true);
-
             navMeshAgent.SetDestination(_positionForAttackLimit.transform.position);
             Debug.Log("Run");
         }
@@ -73,12 +69,12 @@ public class UnitControl : MonoBehaviour
             _isAttacking = false;
         }
     }
+    
     private void MoveToTaget()
     {
-        
         float distance = Vector3.Distance(transform.position, _targets[0].transform.position);
-
-        if(distance <= _distanceAttack)
+        
+        if(distance <= _distanceAttack) // Якщо БЛИЗЬКО - атакуємо
         {
             //Attack
             _attackingTarget = true;
@@ -94,25 +90,26 @@ public class UnitControl : MonoBehaviour
                 animator.speed = _speedAttack;
             }
         }
-        else if(distance >= _distanceAttack+1)
+        else if(distance > _distanceAttack) // Якщо ДАЛЕКО - біжимо
         {
-            //DontStop
+            //Move to target
             navMeshAgent.isStopped = false;
 
             navMeshAgent.SetDestination(_targets[0].transform.position);
             Debug.Log("RunTarget");
             animator.SetBool("Run", true);
             animator.SetBool("Attack", false);
+            _attackingTarget = false; // ДОДАНО: скидаємо стан атаки
         }
-
     }
+    
     private void LookToTarget()
     {
         Vector3 direction = _targets[0].transform.position - transform.position;
-
         direction.y = 0;
         transform.rotation = Quaternion.LookRotation(direction.normalized) * initialRotation;
     }
+    
     private void StopActions()
     {
         if(_attackingTarget)
@@ -126,6 +123,7 @@ public class UnitControl : MonoBehaviour
             _attackingTarget = false;
         }
     }
+    
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out EnemyHealth enemyHealth))
@@ -133,6 +131,15 @@ public class UnitControl : MonoBehaviour
             _targets.Add(enemyHealth.gameObject);
         }
     }
+    
+    private void OnTriggerExit(Collider other) // ДОДАНО: видалення цілі при виході з тригера
+    {
+        if (other.TryGetComponent(out EnemyHealth enemyHealth))
+        {
+            RemoveTarget(enemyHealth.gameObject);
+        }
+    }
+    
     private void RemoveTarget(GameObject enemy)
     {
         _targets.Remove(enemy);
