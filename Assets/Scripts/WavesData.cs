@@ -16,4 +16,5 @@ public struct EnemyData
 {
     public GameObject prefabEnemy;
     public int count;
+    public int bounty;
 }

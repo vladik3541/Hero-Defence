@@ -87,15 +87,12 @@ public class UnitControl : MonoBehaviour
             {
                 navMeshAgent.isStopped = true;
                 navMeshAgent.velocity = Vector3.zero;
-
-
+                
                 OnAttack?.Invoke(_targets[0]);
                 animator.SetBool("Run", false);
                 animator.SetBool("Attack", true);
                 animator.speed = _speedAttack;
             }
-            return;
-
         }
         else if(distance >= _distanceAttack+1)
         {

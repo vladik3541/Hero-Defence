@@ -1,9 +1,14 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+public enum WaveType
+{
+    WaitTime, SpawnTime
+}
 public class WaveSpawner : MonoBehaviour
 {
     [Header("Data")]
@@ -23,10 +28,13 @@ public class WaveSpawner : MonoBehaviour
     private int enemiesAlive;
     private bool waveInProgress;
     private bool skipTimer;
-
+    private WaveType currentWaveType;
+    
+    public WaveType CurrentWaveType { get => currentWaveType; }
     public UnityEvent OnAllWavesCompleted;
-    public UnityEvent<int> OnWaveStarted;
-    public UnityEvent<int> OnWaveEnded;
+    public event Action OnWaveStarted;
+    public event Action OnWaveEnded;
+    
 
     private void Start()
     {
@@ -42,6 +50,7 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator WaveRoutine()
     {
+        currentWaveType = WaveType.WaitTime;
         // Очікування перед першою хвилею
         yield return StartCoroutine(Countdown(startDelay));
         yield return StartCoroutine(StartWave(0));
@@ -49,6 +58,7 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator StartWave(int waveIndex)
     {
+        currentWaveType = WaveType.SpawnTime;
         if (waveIndex >= wavesData.waves.Length)
         {
             OnAllWavesCompleted?.Invoke();
@@ -59,7 +69,7 @@ public class WaveSpawner : MonoBehaviour
 
         waveInProgress = true;
         currentWaveIndex = waveIndex;
-        OnWaveStarted?.Invoke(currentWaveIndex + 1);
+        OnWaveStarted?.Invoke();
         timerText.text = $"Wave {currentWaveIndex + 1}";
 
         Wave wave = wavesData.waves[waveIndex];
@@ -71,8 +81,10 @@ public class WaveSpawner : MonoBehaviour
                 GameObject enemy = Instantiate(enemyData.prefabEnemy, spawnPoint.position, Quaternion.identity);
                 EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
                 if (enemyHealth != null)
+                {
+                    enemyHealth.bounty = enemyData.bounty;
                     enemyHealth.OnDead += OnEnemyDeath;
-
+                }
                 enemiesAlive++;
                 yield return new WaitForSeconds(spawnInterval);
             }
@@ -82,10 +94,11 @@ public class WaveSpawner : MonoBehaviour
             yield return null;
 
         waveInProgress = false;
-        OnWaveEnded?.Invoke(currentWaveIndex + 1);
+        OnWaveEnded?.Invoke();
 
         if (currentWaveIndex + 1 < wavesData.waves.Length)
         {
+            currentWaveType = WaveType.WaitTime;
             yield return StartCoroutine(Countdown(betweenWavesDelay));
             yield return StartCoroutine(StartWave(currentWaveIndex + 1));
         }

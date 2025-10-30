@@ -24,16 +24,6 @@ public class EnemyControl : MonoBehaviour
     private Quaternion initialRotation;
 
     private NavMeshAgent navMeshAgent;
-
-    private void OnEnable()
-    {
-        UnitHealth.OnDeadUnit += RemoveTarget;
-    }
-    private void OnDisable()
-    {
-        UnitHealth.OnDeadUnit -= RemoveTarget;
-    }
-
     // Start is called before the first frame update
     void Start()
     {

@@ -8,10 +8,15 @@ public abstract class Health : MonoBehaviour
     [SerializeField] protected float maxHealth;
     protected float currentHealth;
 
-    protected virtual void Start()
+    public void ResetHealth()
     {
         currentHealth = maxHealth;
         OnHealthChanged?.Invoke(currentHealth/maxHealth);
+    }
+
+    protected virtual void Start()
+    {
+        ResetHealth();
     }
 
     public void TakeDamage(float damage)

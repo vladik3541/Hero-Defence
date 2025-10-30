@@ -7,16 +7,19 @@ public class Castle : MonoBehaviour
 {
     [SerializeField, Min(0f)] private float _health = 3000;
     [SerializeField] private Slider slider;
+    [SerializeField] private Slider sliderInfo;
 
     private void Start()
     {
         slider.maxValue = _health;
         slider.value = _health;
+        sliderInfo.maxValue = _health;
+        sliderInfo.value = _health;
     }
     public void TakeDamage(float damage)
     {
         _health -= damage;
         slider.value = _health;
+        sliderInfo.value = _health;
     }
-
 }

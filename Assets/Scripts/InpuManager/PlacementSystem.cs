@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -5,6 +6,7 @@ using UnityEngine.UI;
 
 public class PlacementSystem : MonoBehaviour
 {
+    [SerializeField] private WaveSpawner waveSpawner;
     [SerializeField] private Button[] unitButtons;
     [SerializeField] private GameObject _mouseIndicator, _cellIndicator;
 
@@ -28,6 +30,8 @@ public class PlacementSystem : MonoBehaviour
 
     private void Start()
     {
+        waveSpawner.OnWaveEnded += ResetUnitPlace;
+        waveSpawner.OnWaveStarted += StopPlacement;
         _audioSource = GetComponent<AudioSource>();
         StopPlacement();
         floorData = new GridData();
@@ -84,10 +88,22 @@ public class PlacementSystem : MonoBehaviour
         _mouseIndicator.transform.position = mousePos;
         _cellIndicator.transform.position = grid.CellToWorld(gridPosition);
     }
+
+    private void ResetUnitPlace()
+    {
+        for (int i = 0; i < placedGameObject.Count; i++)
+        {
+            if (placedGameObject[i].GetComponent<UnitHealth>().IsDead())
+            {
+                placedGameObject[i].SetActive(true);
+            }
+        }
+    }
     
     public void StartPlacement(int index)
     {
         StopPlacement();
+        if(waveSpawner.CurrentWaveType == WaveType.SpawnTime) return;
         _selectObject = index;
         if(_selectObject < 0 || _selectObject >= _currentRace.Count)
         {
@@ -145,6 +161,7 @@ public class PlacementSystem : MonoBehaviour
             _currentRace[_selectObject].Size,
             _currentRace[_selectObject].ID,
             placedGameObject.Count - 1);
+        StopPlacement();
     }
 
     private bool CheckPlacementValidity(Vector3Int gridPosition, int selectedObjectIndex)
@@ -164,5 +181,11 @@ public class PlacementSystem : MonoBehaviour
         _mouseIndicator.SetActive(false);
         _InputManager.OnClicked -= PlaceStructure;
         _InputManager.OnExit -= StopPlacement;
+    }
+
+    private void OnDestroy()
+    {
+        waveSpawner.OnWaveStarted -= StopPlacement;
+        waveSpawner.OnWaveEnded -= ResetUnitPlace;
     }
 }
