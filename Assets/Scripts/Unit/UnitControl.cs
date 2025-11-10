@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,140 +6,139 @@ public class UnitControl : MonoBehaviour
 {
     public event Action<GameObject> OnAttack;
 
-    [SerializeField] private float _radiusAttack;
-    [SerializeField] private float _distanceAttack;
-    [SerializeField, Min(0f)] private float _speedAttack;
-    private GameObject _positionForAttackLimit;
+    [SerializeField] private float radiusAttack = 6f;
+    [SerializeField] private float distanceAttack = 1.7f;
+    [SerializeField] private float speedAttack = 1f;
+    [SerializeField] private LayerMask enemyMask;
 
-    private List<GameObject> _targets;
+    private GameObject attackLimitPoint;
 
-    bool _isAttacking;
-    bool _attackingTarget;
+    private bool isManualAttack;
+    private bool isAttackingTarget;
 
-    Rigidbody rb;
-    Animator animator;
-    NavMeshAgent navMeshAgent;
+    private Animator animator;
+    private NavMeshAgent agent;
     private Quaternion initialRotation;
-    
+
     void Start()
     {
-        _positionForAttackLimit = GameObject.FindGameObjectWithTag("Spawn");
+        attackLimitPoint = GameObject.FindGameObjectWithTag("Spawn");
 
-        initialRotation = transform.rotation;
-        GetComponent<SphereCollider>().radius = _radiusAttack;
-        rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
-
-        _targets = new List<GameObject>();
-        navMeshAgent = GetComponent<NavMeshAgent>();
+        agent = GetComponent<NavMeshAgent>();
+        initialRotation = transform.rotation;
     }
 
     void FixedUpdate()
     {
-        MovingAttack();
-        StopActions(); 
+        HandleManualMove();
+        GameObject target = FindNearestEnemy();
 
-        if (!_targets.Any()) return;
-        if (_targets[0] == null)
+        if (target == null)
         {
-            _targets.Remove(_targets[0]);
+            ResetCombatState();
             return;
         }
-        LookToTarget();
-        MoveToTaget();
-    }
 
-    private void MovingAttack()
-    {
-        if (Input.GetKey(KeyCode.F) && !_targets.Any() && !_attackingTarget)
-        {
-            _isAttacking = true;
-        }
-        
-        if(_isAttacking)
-        {
-            animator.SetBool("Run", true);
-            navMeshAgent.SetDestination(_positionForAttackLimit.transform.position);
-            Debug.Log("Run");
-        }
-        if (_targets.Any())
-        {
-            _isAttacking = false;
-        }
+        MoveOrAttack(target);
+        LookTo(target);
     }
-    
-    private void MoveToTaget()
+    private GameObject FindNearestEnemy()
     {
-        float distance = Vector3.Distance(transform.position, _targets[0].transform.position);
-        
-        if(distance <= _distanceAttack) // Якщо БЛИЗЬКО - атакуємо
-        {
-            //Attack
-            _attackingTarget = true;
+        Collider[] hits = Physics.OverlapSphere(transform.position, radiusAttack, enemyMask);
 
-            if(_attackingTarget)
+        GameObject nearest = null;
+        float minDist = Mathf.Infinity;
+
+        foreach (var hit in hits)
+        {
+            float d = Vector3.Distance(transform.position, hit.transform.position);
+
+            if (d < minDist)
             {
-                navMeshAgent.isStopped = true;
-                navMeshAgent.velocity = Vector3.zero;
-                
-                OnAttack?.Invoke(_targets[0]);
-                animator.SetBool("Run", false);
-                animator.SetBool("Attack", true);
-                animator.speed = _speedAttack;
+                minDist = d;
+                nearest = hit.gameObject;
             }
         }
-        else if(distance > _distanceAttack) // Якщо ДАЛЕКО - біжимо
-        {
-            //Move to target
-            navMeshAgent.isStopped = false;
 
-            navMeshAgent.SetDestination(_targets[0].transform.position);
-            Debug.Log("RunTarget");
+        return nearest;
+    }
+    
+    private void HandleManualMove()
+    {
+        if (Input.GetKey(KeyCode.F))
+        {
+            isManualAttack = true;
+        }
+
+        if (isManualAttack)
+        {
+            animator.SetBool("Run", true);
+            agent.isStopped = false;
+            agent.SetDestination(attackLimitPoint.transform.position);
+        }
+    }
+    
+    private void MoveOrAttack(GameObject target)
+    {
+        float dist = Vector3.Distance(transform.position, target.transform.position);
+
+        isManualAttack = false;
+
+        if (dist <= distanceAttack)
+        {
+            isAttackingTarget = true;
+
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+
+            animator.SetBool("Run", false);
+            animator.SetBool("Attack", true);
+            animator.speed = speedAttack;
+
+            OnAttack?.Invoke(target);
+        }
+        else
+        {
+            isAttackingTarget = false;
+
+            agent.isStopped = false;
+            agent.SetDestination(target.transform.position);
+
             animator.SetBool("Run", true);
             animator.SetBool("Attack", false);
-            _attackingTarget = false; // ДОДАНО: скидаємо стан атаки
+            animator.speed = 1f;
         }
     }
     
-    private void LookToTarget()
+    private void LookTo(GameObject target)
     {
-        Vector3 direction = _targets[0].transform.position - transform.position;
-        direction.y = 0;
-        transform.rotation = Quaternion.LookRotation(direction.normalized) * initialRotation;
+        Vector3 dir = target.transform.position - transform.position;
+        dir.y = 0;
+
+        if (dir.sqrMagnitude > 0.01f)
+        {
+            transform.rotation = Quaternion.LookRotation(dir.normalized) * initialRotation;
+        }
     }
     
-    private void StopActions()
+    private void ResetCombatState()
     {
-        if(_attackingTarget)
+        isAttackingTarget = false;
+
+        animator.SetBool("Attack", false);
+        animator.speed = 1f;
+
+        if (!isManualAttack)
         {
             animator.SetBool("Run", false);
-        }
-        if(!_targets.Any())
-        {
-            animator.speed = 1;
-            animator.SetBool("Attack", false);
-            _attackingTarget = false;
+            agent.isStopped = true;
         }
     }
-    
-    private void OnTriggerEnter(Collider other)
+
+    private void OnDrawGizmosSelected()
     {
-        if (other.TryGetComponent(out EnemyHealth enemyHealth))
-        {
-            _targets.Add(enemyHealth.gameObject);
-        }
-    }
-    
-    private void OnTriggerExit(Collider other) // ДОДАНО: видалення цілі при виході з тригера
-    {
-        if (other.TryGetComponent(out EnemyHealth enemyHealth))
-        {
-            RemoveTarget(enemyHealth.gameObject);
-        }
-    }
-    
-    private void RemoveTarget(GameObject enemy)
-    {
-        _targets.Remove(enemy);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, radiusAttack);
     }
 }

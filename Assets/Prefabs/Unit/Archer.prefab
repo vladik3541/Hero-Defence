@@ -2391,9 +2391,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecb5ad005f65b0941a528a86d2986d2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _radiusAttack: 5
-  _distanceAttack: 8
-  _speedAttack: 0.5
+  radiusAttack: 6
+  distanceAttack: 1.7
+  speedAttack: 1
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!114 &467877134913556222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2427,8 +2430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ba62950507fef49940873a20bbde59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 400
-  sliderHp: {fileID: 1463211318714292315}
+  maxHealth: 0
 --- !u!195 &2955288304899525614
 NavMeshAgent:
   m_ObjectHideFlags: 0
