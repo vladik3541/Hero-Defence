@@ -453,6 +453,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _health: 3000
   slider: {fileID: 3704764915060895533}
+  sliderInfo: {fileID: 0}
 --- !u!95 &7912165189258356784
 Animator:
   serializedVersion: 5

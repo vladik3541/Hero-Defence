@@ -36,7 +36,7 @@ public class WaveSpawner : MonoBehaviour
     public event Action OnWaveEnded;
     
 
-    private void Start()
+    public void Initialize()
     {
         readyButton.onClick.AddListener(SkipWaiting);
         StartCoroutine(WaveRoutine());

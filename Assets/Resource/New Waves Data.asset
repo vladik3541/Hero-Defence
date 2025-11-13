@@ -23,3 +23,8 @@ MonoBehaviour:
     - prefabEnemy: {fileID: 7177582341967954937, guid: d674f563e75c67b45aeef52db208b8df, type: 3}
       count: 15
       bounty: 0
+  - name: Wave3
+    enemies:
+    - prefabEnemy: {fileID: 2391359435489877134, guid: 893026a7bdad9be439789d3cdde785db, type: 3}
+      count: 10
+      bounty: 25

@@ -28,7 +28,7 @@ public class PlacementSystem : MonoBehaviour
 
     private List<GameObject> placedGameObject = new ();
 
-    private void Start()
+    public void Initialize(RaceType raceType)
     {
         waveSpawner.OnWaveEnded += ResetUnitPlace;
         waveSpawner.OnWaveStarted += StopPlacement;
@@ -38,7 +38,7 @@ public class PlacementSystem : MonoBehaviour
         furnitureData = new GridData();
         previewRenderer = _cellIndicator.GetComponentInChildren<Renderer>();
 
-        switch (RaceType.human)
+        switch (raceType)
         {
             case RaceType.human:
                 _currentRace = _DataBase.humans;
