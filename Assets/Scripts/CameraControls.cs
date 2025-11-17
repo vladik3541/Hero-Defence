@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class CameraControls : MonoBehaviour
 {
-    private CameraControl cameraActions;
+    private CameraControll cameraActions;
     private InputAction movement;
     private Transform cameraTransform;
 
@@ -59,7 +59,7 @@ public class CameraControls : MonoBehaviour
 
     private void Awake()
     {
-        cameraActions = new CameraControl();
+        cameraActions = new CameraControll();
         cameraTransform = this.GetComponentInChildren<Camera>().transform;
     }
 

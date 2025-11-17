@@ -2046,9 +2046,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecb5ad005f65b0941a528a86d2986d2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _radiusAttack: 5
-  _distanceAttack: 3
-  _speedAttack: 1
+  radiusAttack: 6
+  distanceAttack: 1.7
+  speedAttack: 1
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!114 &8185550176374940950
 MonoBehaviour:
   m_ObjectHideFlags: 0

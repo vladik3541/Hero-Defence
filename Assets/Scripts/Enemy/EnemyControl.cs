@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -7,122 +6,94 @@ public class EnemyControl : MonoBehaviour
 {
     public event Action<GameObject> OnCurrentTarget;
 
-    [SerializeField] private float _speed;
-    [SerializeField] private float _distanceForAttack;
+    [SerializeField] private float speed = 3f;
+    [SerializeField] private float distanceForAttack = 1.5f;
+    [SerializeField] private float detectionRadius = 8f;
+    [SerializeField] private LayerMask targetMask;
 
-    private List<GameObject> _targets = new List<GameObject>();
-    private GameObject _currentTarget;
-    private GameObject _targeDefault;
+    private GameObject defaultTarget;
+    private GameObject currentTarget;
 
     private Animator animator;
-    private Quaternion initialRotation;
     private NavMeshAgent navMeshAgent;
+    private Quaternion initialRotation;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
 
-        _targeDefault = GameObject.FindGameObjectWithTag("Castle");
-        _targets.Add(_targeDefault);
-        _currentTarget = _targets[0];
+        defaultTarget = GameObject.FindGameObjectWithTag("Castle");
+        currentTarget = defaultTarget;
 
         initialRotation = transform.rotation;
-        navMeshAgent.speed = _speed;
+        navMeshAgent.speed = speed;
     }
 
     void Update()
     {
-        SwapTarget();
-        DistansForAttack();
+        UpdateTarget();
+        UpdateAttackState();
     }
 
-    private void SwapTarget()
+    private void UpdateTarget()
     {
-        if(_targets.Count > 1)
+        Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, targetMask);
+        GameObject nearest = null;
+        float minDist = Mathf.Infinity;
+
+        foreach (var hit in hits)
         {
-            if (_targets[1] != null)
+            float d = Vector3.Distance(transform.position, hit.transform.position);
+            if (d < minDist)
             {
-                _currentTarget = _targets[1];
+                minDist = d;
+                nearest = hit.gameObject;
             }
-            else
-            {
-                _targets.RemoveAt(1);
-                _currentTarget = _targets[0];
-            }
-        } 
-        if(_targets.Count == 1)
-        {
-            _currentTarget = _targets[0];
         }
-    }
-    
-    private void DistansForAttack()
-    {
-        if (_currentTarget == null) return;
 
-        float distans = Vector3.Distance(transform.position, _currentTarget.transform.position);
-        
-        if(distans <= _distanceForAttack) // Якщо БЛИЗЬКО - атакуємо
+        currentTarget = nearest != null ? nearest : defaultTarget;
+    }
+
+    private void UpdateAttackState()
+    {
+        if (currentTarget == null) return;
+
+        float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
+
+        if (dist <= distanceForAttack)
         {
             navMeshAgent.isStopped = true;
             navMeshAgent.velocity = Vector3.zero;
 
-            OnCurrentTarget?.Invoke(_currentTarget);
-
             animator.SetBool("Attack", true);
-            navMeshAgent.speed = 0;
-            
+            OnCurrentTarget?.Invoke(currentTarget);
+
             LookToTarget();
         }
         else
         {
             animator.SetBool("Attack", false);
-            navMeshAgent.speed = _speed;
             navMeshAgent.isStopped = false;
-
-            navMeshAgent.SetDestination(_currentTarget.transform.position);
+            navMeshAgent.speed = speed;
+            navMeshAgent.SetDestination(currentTarget.transform.position);
         }
     }
 
-    void LookToTarget()
+    private void LookToTarget()
     {
-        if (_currentTarget == null) return; 
+        Vector3 dir = currentTarget.transform.position - transform.position;
+        dir.y = 0;
 
-        Vector3 directionToTarget = _currentTarget.transform.position - transform.position;
-        directionToTarget.y = 0;
-
-        if (directionToTarget != Vector3.zero)
+        if (dir.sqrMagnitude > 0.001f)
         {
-            transform.rotation = Quaternion.LookRotation(directionToTarget.normalized) * initialRotation;
+            transform.rotation = Quaternion.LookRotation(dir.normalized) * initialRotation;
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnDrawGizmosSelected()
     {
-        if(other.TryGetComponent(out UnitHealth unitHealth))
-        {
-            _targets.Add(unitHealth.gameObject);
-        }
-    }
-
-    //  OnTriggerExit для видалення цілей
-    private void OnTriggerExit(Collider other)
-    {
-        if(other.TryGetComponent(out UnitHealth unitHealth))
-        {
-            RemoveTarget(unitHealth.gameObject);
-        }
-    }
-
-    private void RemoveTarget(GameObject target)
-    {
-        _targets.Remove(target);
-        
-        //  Якщо видалили поточну ціль, оновлюємо
-        if (_currentTarget == target)
-        {
-            SwapTarget();
-        }
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
     }
 }

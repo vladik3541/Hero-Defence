@@ -40,7 +40,6 @@ public class RangeAttack : MonoBehaviour
     {
         GameObject trail = Instantiate(_projectile, _spawnBullet.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, _target));
- 
     }
     
     
